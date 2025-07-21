@@ -1,0 +1,14 @@
+name = "smart-qr-worker"
+main = "index.js"
+compatibility_date = "2024-01-01"
+
+[[kv_namespaces]]
+binding = "QR_METADATA"
+id = "ef64bc4e962844a4b9c0a6a32551f4b1"
+
+[vars]
+ENVIRONMENT = "production"
+B2_BUCKET_NAME = "qr-storage"
+B2_ENDPOINT = "https://s3.us-east-005.backblazeb2.com"
+
+# Secrets (B2_APPLICATION_KEY_ID, B2_APPLICATION_KEY) should be set via wrangler secret put
