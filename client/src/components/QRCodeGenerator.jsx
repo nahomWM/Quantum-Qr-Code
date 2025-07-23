@@ -21,6 +21,7 @@ const QRCodeGenerator = () => {
     const [type, setType] = useState(null); // 'time' or 'location'
     const [files, setFiles] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [generatedQr, setGeneratedQr] = useState(null);
 
     const onDrop = (acceptedFiles) => {
         setFiles(prev => [...prev, ...acceptedFiles.map(file => Object.assign(file, {
@@ -36,6 +37,54 @@ const QRCodeGenerator = () => {
 
     const removeFile = (id) => {
         setFiles(prev => prev.filter(f => f.id !== id));
+    };
+
+    const handleGenerate = async () => {
+        setIsLoading(true);
+        try {
+            // 1. Upload Files to B2 via Worker
+            const uploadedFileMeta = await Promise.all(files.map(async (file) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                const res = await fetch('https://smart-qr-worker.weldemdhinnahom.workers.dev/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                return await res.json();
+            }));
+
+            // 2. Create QR Metadata
+            const qrData = {
+                type,
+                configurations: files.map((file, idx) => ({
+                    fileId: uploadedFileMeta[idx].fileId,
+                    fileName: file.name,
+                    ...(type === 'time' ? { start: file.start, end: file.end } : { locationCode: file.locationCode })
+                })),
+                files: uploadedFileMeta
+            };
+
+            const metaRes = await fetch('https://smart-qr-worker.weldemdhinnahom.workers.dev/metadata', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(qrData)
+            });
+
+            const { qrId } = await metaRes.json();
+
+            setGeneratedQr({
+                id: qrId,
+                url: `https://smart-qr-worker.weldemdhinnahom.workers.dev/qr/${qrId}`,
+                data: qrData
+            });
+
+            toast.success('QR Code ready!');
+        } catch (err) {
+            toast.error('Failed to generate QR code');
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -168,6 +217,147 @@ const QRCodeGenerator = () => {
                                     Configure Rules <ChevronRight className="w-5 h-5" />
                                 </button>
                             </div>
+                        </motion.div>
+                    )}
+
+                    {currentStep === 2 && (
+                        <motion.div
+                            key="step2"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="space-y-8 h-full flex flex-col"
+                        >
+                            <div className="text-center">
+                                <h2 className="text-4xl font-bold mb-4">Configure {type === 'time' ? 'Time' : 'Location'} Rules</h2>
+                                <p className="text-text-secondary text-lg">Map your files to specific {type === 'time' ? 'time ranges' : 'countries'}.</p>
+                            </div>
+
+                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                                {files.map((file, idx) => (
+                                    <div key={file.id} className="p-6 glass rounded-2xl flex flex-col md:flex-row md:items-center gap-6">
+                                        <div className="flex items-center gap-3 min-w-[200px]">
+                                            <div className="p-2 bg-primary/10 rounded-lg">
+                                                <File className="w-5 h-5 text-primary" />
+                                            </div>
+                                            <span className="font-bold truncate">{file.name}</span>
+                                        </div>
+
+                                        <div className="flex-1 flex flex-col md:flex-row gap-4">
+                                            {type === 'time' ? (
+                                                <>
+                                                    <div className="flex-1">
+                                                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold mb-2 block">Start Time</label>
+                                                        <input
+                                                            type="time"
+                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                                                            onChange={(e) => file.start = e.target.value}
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label className="text-xs text-text-secondary uppercase tracking-wider font-bold mb-2 block">End Time</label>
+                                                        <input
+                                                            type="time"
+                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                                                            onChange={(e) => file.end = e.target.value}
+                                                        />
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex-1">
+                                                    <label className="text-xs text-text-secondary uppercase tracking-wider font-bold mb-2 block">Country Code (ISO)</label>
+                                                    <input
+                                                        type="text"
+                                                        placeholder="e.g. US, GB, JP"
+                                                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:outline-none focus:border-primary transition-colors"
+                                                        onChange={(e) => file.locationCode = e.target.value.toUpperCase()}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="flex items-center justify-between pt-8 mt-auto">
+                                <button onClick={prevStep} className="flex items-center gap-2 px-8 py-4 glass rounded-2xl font-bold hover:bg-white/10 transition-all">
+                                    <ChevronLeft className="w-5 h-5" /> Back
+                                </button>
+                                <button
+                                    onClick={nextStep}
+                                    className="flex items-center gap-2 px-10 py-4 bg-primary-gradient rounded-2xl font-bold shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-all"
+                                >
+                                    Review & Generate <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {currentStep === 3 && (
+                        <motion.div
+                            key="step3"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            className="space-y-8 flex flex-col items-center justify-center text-center h-full py-12"
+                        >
+                            {generatedQr ? (
+                                <div className="space-y-8">
+                                    <h2 className="text-4xl font-bold mb-4">Deployment Successful</h2>
+                                    <div className="p-8 bg-white rounded-[2rem] shadow-2xl">
+                                        {/* Simplified QR placeholder for now */}
+                                        <div className="w-64 h-64 bg-gray-100 rounded-xl flex items-center justify-center border-4 border-indigo-500/20">
+                                            <QrCode className="w-32 h-32 text-indigo-600" />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <p className="text-text-secondary">Your dynamic QR code is live at:</p>
+                                        <div className="p-4 glass rounded-xl font-mono text-sm border border-primary/20 bg-primary/5">
+                                            {generatedQr.url}
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <button
+                                                onClick={() => { navigator.clipboard.writeText(generatedQr.url); toast.success('Link copied!'); }}
+                                                className="px-6 py-3 glass rounded-xl text-sm font-bold hover:bg-white/10"
+                                            >
+                                                Copy Link
+                                            </button>
+                                            <button
+                                                className="px-6 py-3 bg-primary-gradient rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/20"
+                                            >
+                                                Download PNG
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : !isLoading ? (
+                                <>
+                                    <div className="p-8 bg-primary/10 rounded-[3rem] border border-primary/20 mb-8 animate-float">
+                                        <QrCode className="w-24 h-24 text-primary" />
+                                    </div>
+                                    <h2 className="text-4xl font-bold mb-4">Ready for Launch</h2>
+                                    <p className="text-text-secondary text-lg max-w-sm mb-12">
+                                        Your {files.length} rules are set. We'll generate a high-speed dynamic QR code for you.
+                                    </p>
+
+                                    <div className="flex gap-4 w-full max-w-md">
+                                        <button onClick={prevStep} className="flex-1 px-8 py-4 glass rounded-2xl font-bold hover:bg-white/10 transition-all">
+                                            Review
+                                        </button>
+                                        <button
+                                            onClick={handleGenerate}
+                                            className="flex-[2] flex items-center justify-center gap-2 px-10 py-4 bg-primary-gradient rounded-2xl font-bold shadow-xl shadow-indigo-500/20 hover:scale-[1.02] transition-all"
+                                        >
+                                            Process & Secure <Send className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="flex flex-col items-center gap-6">
+                                    <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                    <p className="text-xl font-bold animate-pulse text-indigo-300">Deploying Quantum Logic...</p>
+                                </div>
+                            )}
                         </motion.div>
                     )}
                 </AnimatePresence>
