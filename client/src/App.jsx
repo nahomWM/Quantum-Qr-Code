@@ -12,6 +12,7 @@ import {
   History
 } from 'lucide-react';
 import { Toaster } from 'react-hot-toast';
+import QRCodeGenerator from './components/QRCodeGenerator';
 
 // Temporary components (will move to separate files)
 const Navbar = ({ activeTab, setActiveTab }) => (
@@ -36,8 +37,8 @@ const Navbar = ({ activeTab, setActiveTab }) => (
           key={item.id}
           onClick={() => setActiveTab(item.id)}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 ${activeTab === item.id
-              ? 'bg-primary-gradient text-white shadow-lg shadow-indigo-500/30'
-              : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+            ? 'bg-primary-gradient text-white shadow-lg shadow-indigo-500/30'
+            : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
             }`}
         >
           <item.icon className="w-5 h-5" />
@@ -106,7 +107,7 @@ function App() {
               exit={{ opacity: 0, x: 20 }}
             >
               <Hero />
-              {/* Future: QR Generation Grid */}
+              <QRCodeGenerator />
             </motion.div>
           )}
 
