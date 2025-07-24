@@ -16,7 +16,7 @@ import toast from 'react-hot-toast';
 
 const steps = ['Select Type', 'Upload Content', 'Set Rules', 'Generate'];
 
-const QRCodeGenerator = () => {
+const QRCodeGenerator = ({ onGenerateSuccess }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [type, setType] = useState(null); // 'time' or 'location'
     const [files, setFiles] = useState([]);
@@ -79,6 +79,7 @@ const QRCodeGenerator = () => {
             });
 
             toast.success('QR Code ready!');
+            if (onGenerateSuccess) onGenerateSuccess(qrId);
         } catch (err) {
             toast.error('Failed to generate QR code');
             console.error(err);
