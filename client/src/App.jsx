@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   QrCode,
@@ -6,11 +6,12 @@ import {
   Settings,
   Zap,
   PlusCircle,
-  History
+  History as HistoryIcon
 } from 'lucide-react';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import QRCodeGenerator from './components/QRCodeGenerator';
 import Analytics from './components/Analytics';
+import History from './components/History';
 
 const Navbar = ({ activeTab, setActiveTab }) => (
   <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl px-8 py-4 glass rounded-3xl flex items-center justify-between">
@@ -26,7 +27,7 @@ const Navbar = ({ activeTab, setActiveTab }) => (
     <div className="flex items-center gap-1 md:gap-4">
       {[
         { id: 'create', icon: PlusCircle, label: 'Create' },
-        { id: 'history', icon: History, label: 'History' },
+        { id: 'history', icon: HistoryIcon, label: 'History' },
         { id: 'analytics', icon: BarChart3, label: 'Analytics' },
         { id: 'settings', icon: Settings, label: 'Settings' }
       ].map((item) => (
@@ -74,6 +75,31 @@ const Hero = () => (
 function App() {
   const [activeTab, setActiveTab] = useState('create');
   const [lastGeneratedId, setLastGeneratedId] = useState(null);
+  const [history, setHistory] = useState(() => {
+    const saved = localStorage.getItem('qr_history');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('qr_history', JSON.stringify(history));
+  }, [history]);
+
+  const handleGenerateSuccess = (id) => {
+    // Note: In a real app, you'd fetch the full meta or pass it from Generator
+    setHistory(prev => [{ id, url: `https://smart-qr-worker.weldemdhinnahom.workers.dev/qr/${id}`, data: { type: 'dynamic' } }, ...prev]);
+    setLastGeneratedId(id);
+    setActiveTab('analytics');
+  };
+
+  const deleteFromHistory = (id) => {
+    setHistory(prev => prev.filter(item => item.id !== id));
+    toast.success('Removed from history');
+  };
+
+  const selectFromHistory = (id) => {
+    setLastGeneratedId(id);
+    setActiveTab('analytics');
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -95,12 +121,7 @@ function App() {
               exit={{ opacity: 0, x: 20 }}
             >
               <Hero />
-              <QRCodeGenerator
-                onGenerateSuccess={(id) => {
-                  setLastGeneratedId(id);
-                  setActiveTab('analytics');
-                }}
-              />
+              <QRCodeGenerator onGenerateSuccess={handleGenerateSuccess} />
             </motion.div>
           )}
 
@@ -115,7 +136,22 @@ function App() {
             </motion.div>
           )}
 
-          {(activeTab === 'history' || activeTab === 'settings') && (
+          {activeTab === 'history' && (
+            <motion.div
+              key="history"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+            >
+              <History
+                history={history}
+                onSelect={selectFromHistory}
+                onDelete={deleteFromHistory}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'settings' && (
             <motion.div
               key="placeholder"
               initial={{ opacity: 0 }}
@@ -123,7 +159,7 @@ function App() {
               className="pt-40 text-center"
             >
               <div className="glass p-20 rounded-[3rem] max-w-2xl mx-auto">
-                <History className="w-16 h-16 mx-auto mb-6 text-indigo-400 opacity-20" />
+                <Settings className="w-16 h-16 mx-auto mb-6 text-indigo-400 opacity-20" />
                 <h2 className="text-3xl font-bold mb-4">Module Under Development</h2>
                 <p className="text-text-secondary text-lg">We are preparing something special for this section. Stay tuned.</p>
               </div>
