@@ -12,6 +12,7 @@ import { Toaster, toast } from 'react-hot-toast';
 import QRCodeGenerator from './components/QRCodeGenerator';
 import Analytics from './components/Analytics';
 import History from './components/History';
+import VideoCompressor from './components/VideoCompressor';
 
 const Navbar = ({ activeTab, setActiveTab }) => (
   <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl px-8 py-4 glass rounded-3xl flex items-center justify-between">
@@ -28,6 +29,7 @@ const Navbar = ({ activeTab, setActiveTab }) => (
       {[
         { id: 'create', icon: PlusCircle, label: 'Create' },
         { id: 'history', icon: HistoryIcon, label: 'History' },
+        { id: 'tools', icon: Zap, label: 'Tools' },
         { id: 'analytics', icon: BarChart3, label: 'Analytics' },
         { id: 'settings', icon: Settings, label: 'Settings' }
       ].map((item) => (
@@ -35,8 +37,8 @@ const Navbar = ({ activeTab, setActiveTab }) => (
           key={item.id}
           onClick={() => setActiveTab(item.id)}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all duration-300 ${activeTab === item.id
-              ? 'bg-primary-gradient text-white shadow-lg shadow-indigo-500/30'
-              : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
+            ? 'bg-primary-gradient text-white shadow-lg shadow-indigo-500/30'
+            : 'text-text-secondary hover:text-text-primary hover:bg-white/5'
             }`}
         >
           <item.icon className="w-5 h-5" />
@@ -148,6 +150,17 @@ function App() {
                 onSelect={selectFromHistory}
                 onDelete={deleteFromHistory}
               />
+            </motion.div>
+          )}
+
+          {activeTab === 'tools' && (
+            <motion.div
+              key="tools"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="pt-40"
+            >
+              <VideoCompressor />
             </motion.div>
           )}
 
