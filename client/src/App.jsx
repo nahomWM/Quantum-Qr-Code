@@ -13,6 +13,7 @@ import QRCodeGenerator from './components/QRCodeGenerator';
 import Analytics from './components/Analytics';
 import History from './components/History';
 import VideoCompressor from './components/VideoCompressor';
+import AIManual from './components/AIManual';
 
 const Navbar = ({ activeTab, setActiveTab }) => (
   <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl px-8 py-4 glass rounded-3xl flex items-center justify-between">
@@ -158,9 +159,10 @@ function App() {
               key="tools"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              className="pt-40"
+              className="pt-32 space-y-12"
             >
               <VideoCompressor />
+              <AIManual />
             </motion.div>
           )}
 
