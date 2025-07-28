@@ -14,6 +14,7 @@ import Analytics from './components/Analytics';
 import History from './components/History';
 import VideoCompressor from './components/VideoCompressor';
 import AIManual from './components/AIManual';
+import SettingsComponent from './components/Settings';
 
 const Navbar = ({ activeTab, setActiveTab }) => (
   <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl px-8 py-4 glass rounded-3xl flex items-center justify-between">
@@ -166,18 +167,18 @@ function App() {
             </motion.div>
           )}
 
+          import SettingsComponent from './components/Settings';
+
+          // ... (previous imports)
+          ...
           {activeTab === 'settings' && (
             <motion.div
-              key="placeholder"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="pt-40 text-center"
+              key="settings"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
             >
-              <div className="glass p-20 rounded-[3rem] max-w-2xl mx-auto">
-                <Settings className="w-16 h-16 mx-auto mb-6 text-indigo-400 opacity-20" />
-                <h2 className="text-3xl font-bold mb-4">Module Under Development</h2>
-                <p className="text-text-secondary text-lg">We are preparing something special for this section. Stay tuned.</p>
-              </div>
+              <SettingsComponent />
             </motion.div>
           )}
         </AnimatePresence>
