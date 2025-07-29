@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
+import { API_ENDPOINTS } from '../config';
 
 const steps = ['Select Type', 'Upload Content', 'Set Rules', 'Generate'];
 
@@ -46,7 +47,7 @@ const QRCodeGenerator = ({ onGenerateSuccess }) => {
             const uploadedFileMeta = await Promise.all(files.map(async (file) => {
                 const formData = new FormData();
                 formData.append('file', file);
-                const res = await fetch('https://smart-qr-worker.weldemdhinnahom.workers.dev/upload', {
+                const res = await fetch(API_ENDPOINTS.UPLOAD(), {
                     method: 'POST',
                     body: formData
                 });
@@ -64,7 +65,7 @@ const QRCodeGenerator = ({ onGenerateSuccess }) => {
                 files: uploadedFileMeta
             };
 
-            const metaRes = await fetch('https://smart-qr-worker.weldemdhinnahom.workers.dev/metadata', {
+            const metaRes = await fetch(API_ENDPOINTS.METADATA(), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(qrData)
@@ -74,7 +75,7 @@ const QRCodeGenerator = ({ onGenerateSuccess }) => {
 
             setGeneratedQr({
                 id: qrId,
-                url: `https://smart-qr-worker.weldemdhinnahom.workers.dev/qr/${qrId}`,
+                url: API_ENDPOINTS.QR(qrId),
                 data: qrData
             });
 

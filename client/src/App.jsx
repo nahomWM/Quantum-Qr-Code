@@ -15,13 +15,13 @@ import History from './components/History';
 import VideoCompressor from './components/VideoCompressor';
 import AIManual from './components/AIManual';
 import SettingsComponent from './components/Settings';
+import Logo from './components/Logo';
+import { API_ENDPOINTS } from './config';
 
 const Navbar = ({ activeTab, setActiveTab }) => (
   <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl px-8 py-4 glass rounded-3xl flex items-center justify-between">
-    <div className="flex items-center gap-2">
-      <div className="p-2 bg-primary-gradient rounded-xl shadow-lg shadow-indigo-500/20">
-        <QrCode className="w-6 h-6 text-white" />
-      </div>
+    <div className="flex items-center gap-3">
+      <Logo />
       <span className="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-primary-gradient">
         SmartQR
       </span>
@@ -89,8 +89,7 @@ function App() {
   }, [history]);
 
   const handleGenerateSuccess = (id) => {
-    // Note: In a real app, you'd fetch the full meta or pass it from Generator
-    setHistory(prev => [{ id, url: `https://smart-qr-worker.weldemdhinnahom.workers.dev/qr/${id}`, data: { type: 'dynamic' } }, ...prev]);
+    setHistory(prev => [{ id, url: API_ENDPOINTS.QR(id), data: { type: 'dynamic' } }, ...prev]);
     setLastGeneratedId(id);
     setActiveTab('analytics');
   };

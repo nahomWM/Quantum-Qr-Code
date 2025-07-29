@@ -10,6 +10,7 @@ import {
     ExternalLink
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { API_ENDPOINTS } from '../config';
 
 const Analytics = ({ qrId }) => {
     const [data, setData] = useState(null);
@@ -18,7 +19,7 @@ const Analytics = ({ qrId }) => {
     const fetchAnalytics = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`https://smart-qr-worker.weldemdhinnahom.workers.dev/analytics/${qrId}`);
+            const res = await fetch(API_ENDPOINTS.ANALYTICS(qrId));
             const result = await res.json();
             setData(result);
         } catch (err) {
