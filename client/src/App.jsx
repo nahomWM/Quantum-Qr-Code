@@ -5,6 +5,7 @@ import {
   BarChart3,
   Settings,
   Zap,
+  Activity as ActivityIcon,
   PlusCircle,
   History as HistoryIcon
 } from 'lucide-react';
@@ -15,6 +16,7 @@ import History from './components/History';
 import VideoCompressor from './components/VideoCompressor';
 import AIManual from './components/AIManual';
 import SettingsComponent from './components/Settings';
+import Dashboard from './components/Dashboard';
 import Logo from './components/Logo';
 import { API_ENDPOINTS } from './config';
 
@@ -29,11 +31,12 @@ const Navbar = ({ activeTab, setActiveTab }) => (
 
     <div className="flex items-center gap-1 md:gap-4">
       {[
+        { id: 'dashboard', icon: BarChart3, label: 'Explore' },
         { id: 'create', icon: PlusCircle, label: 'Create' },
         { id: 'history', icon: HistoryIcon, label: 'History' },
         { id: 'tools', icon: Zap, label: 'Tools' },
-        { id: 'analytics', icon: BarChart3, label: 'Analytics' },
-        { id: 'settings', icon: Settings, label: 'Settings' }
+        { id: 'analytics', icon: ActivityIcon, label: 'Live' }, // Rename analytics to Live
+        { id: 'settings', icon: Settings, label: 'Config' }
       ].map((item) => (
         <button
           key={item.id}
@@ -77,7 +80,7 @@ const Hero = () => (
 );
 
 function App() {
-  const [activeTab, setActiveTab] = useState('create');
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [lastGeneratedId, setLastGeneratedId] = useState(null);
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem('qr_history');
@@ -116,6 +119,17 @@ function App() {
 
       <main className="container mx-auto max-w-7xl px-4">
         <AnimatePresence mode="wait">
+          {activeTab === 'dashboard' && (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            >
+              <Dashboard history={history} />
+            </motion.div>
+          )}
+
           {activeTab === 'create' && (
             <motion.div
               key="create"
