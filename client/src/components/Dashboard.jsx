@@ -90,10 +90,15 @@ const Dashboard = ({ history }) => {
                             <stat.icon className="w-6 h-6" />
                         </div>
                         <div>
-                            <p className="text-text-secondary text-xs font-black uppercase tracking-[0.2em] mb-1">{stat.label}</p>
-                            <div className="flex items-center justify-between">
-                                <span className="text-4xl font-black italic">{stat.value}</span>
-                                <ArrowUpRight className="w-5 h-5 opacity-20" />
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <p className="text-text-secondary text-xs font-black uppercase tracking-[0.2em]">{stat.label}</p>
+                                    <span className="text-[10px] font-bold text-emerald-400">↑ {stat.growth || '8%'}</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-4xl font-black italic">{stat.value}</span>
+                                    <ArrowUpRight className="w-5 h-5 opacity-20" />
+                                </div>
                             </div>
                         </div>
                     </motion.div>
