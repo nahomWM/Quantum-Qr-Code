@@ -7,11 +7,12 @@ import {
     BarChart3,
     Calendar,
     Clock,
-    MapPin
+    MapPin,
+    Settings
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const History = ({ history, onSelect, onDelete }) => {
+const History = ({ history, onSelect, onDelete, onEdit }) => {
     if (history.length === 0) return (
         <div className="pt-40 text-center">
             <div className="p-10 glass rounded-[3rem] max-w-xl mx-auto border-dashed border-2">
@@ -53,6 +54,13 @@ const History = ({ history, onSelect, onDelete }) => {
                                     <BarChart3 className="w-5 h-5" />
                                 </button>
                                 <button
+                                    onClick={() => onEdit(item)}
+                                    className="p-3 glass rounded-xl hover:bg-white/10 text-amber-400"
+                                    title="Edit Rules"
+                                >
+                                    <Settings className="w-5 h-5" />
+                                </button>
+                                <button
                                     onClick={() => onDelete(item.id)}
                                     className="p-3 glass rounded-xl hover:bg-red-500/10 text-red-400"
                                     title="Delete"
@@ -68,7 +76,7 @@ const History = ({ history, onSelect, onDelete }) => {
 
                         <div className="flex items-center gap-3 text-xs text-text-secondary font-bold mb-6">
                             <Calendar className="w-3.4 h-3.4" />
-                            {new Date().toLocaleDateString()} {/* Replace with item.createdAt if stored */}
+                            {new Date().toLocaleDateString()}
                             <span className="w-1 h-1 bg-white/10 rounded-full" />
                             <span className="uppercase tracking-widest">{item.data.type} Redirection</span>
                         </div>
