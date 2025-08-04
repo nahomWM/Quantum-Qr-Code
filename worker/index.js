@@ -31,6 +31,10 @@ export default {
                 return await handleAnalytics(request, qrId, env);
             }
 
+            if (path === '/batch-analytics') {
+                return await handleBatchAnalytics(request, env);
+            }
+
             if (path === '/upload') {
                 return await handleFileUpload(request, env);
             }
@@ -324,4 +328,25 @@ function t2m(t) {
 async function generateHash(buffer, algo) {
     const hash = await crypto.subtle.digest(algo, buffer);
     return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function handleBatchAnalytics(request, env) {
+    if (request.method !== 'POST') return new Response('Method not allowed', { status: 405 });
+
+    try {
+        const { ids } = await request.json();
+        const results = await Promise.all(ids.map(async (id) => {
+            const data = await env.QR_METADATA.get(`analytics-${id}`, { type: 'json' });
+            return { id, ...(data || { total: 0, scans: [] }) };
+        }));
+
+        return new Response(JSON.stringify(results), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+    } catch (err) {
+        return new Response(JSON.stringify({ error: err.message }), {
+            status: 400,
+            headers: corsHeaders
+        });
+    }
 }
