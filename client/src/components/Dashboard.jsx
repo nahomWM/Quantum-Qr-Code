@@ -23,18 +23,25 @@ const Dashboard = ({ history }) => {
 
     useEffect(() => {
         const fetchGlobalStats = async () => {
+            if (history.length === 0) return;
             setLoading(true);
-            let total = 0;
-            const countries = new Set();
 
             try {
-                await Promise.all(history.map(async (item) => {
-                    const res = await fetch(API_ENDPOINTS.ANALYTICS(item.id));
-                    const data = await res.json();
+                const res = await fetch(API_ENDPOINTS.BATCH_ANALYTICS(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ids: history.map(h => h.id) })
+                });
+                const results = await res.json();
+
+                let total = 0;
+                const countries = new Set();
+
+                results.forEach(data => {
                     total += data.totalScans || data.total || 0;
                     if (data.byCountry) Object.keys(data.byCountry).forEach(c => countries.add(c));
                     if (data.countries) Object.keys(data.countries).forEach(c => countries.add(c));
-                }));
+                });
 
                 setStats(prev => ({
                     ...prev,
@@ -43,7 +50,7 @@ const Dashboard = ({ history }) => {
                     uniqueQRs: history.length
                 }));
             } catch (err) {
-                console.error('Failed to fetch global stats', err);
+                console.error('Failed to fetch batch stats', err);
             } finally {
                 setLoading(false);
             }
