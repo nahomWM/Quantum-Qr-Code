@@ -19,8 +19,9 @@ import SettingsComponent from './components/Settings';
 import Dashboard from './components/Dashboard';
 import Logo from './components/Logo';
 import { API_ENDPOINTS } from './config';
+import { Sun, Moon } from 'lucide-react';
 
-const Navbar = ({ activeTab, setActiveTab }) => (
+const Navbar = ({ activeTab, setActiveTab, theme, toggleTheme }) => (
   <nav className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-4xl px-8 py-4 glass rounded-3xl flex items-center justify-between">
     <div className="flex items-center gap-3">
       <Logo />
@@ -30,6 +31,12 @@ const Navbar = ({ activeTab, setActiveTab }) => (
     </div>
 
     <div className="flex items-center gap-1 md:gap-4">
+      <button
+        onClick={toggleTheme}
+        className="p-2 glass rounded-xl text-text-secondary hover:text-text-primary mr-2"
+      >
+        {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </button>
       {[
         { id: 'dashboard', icon: BarChart3, label: 'Explore' },
         { id: 'create', icon: PlusCircle, label: 'Create' },
@@ -81,11 +88,17 @@ const Hero = () => (
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [theme, setTheme] = useState(localStorage.getItem('app_theme') || 'dark');
   const [lastGeneratedId, setLastGeneratedId] = useState(null);
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem('qr_history');
     return saved ? JSON.parse(saved) : [];
   });
+
+  useEffect(() => {
+    localStorage.setItem('app_theme', theme);
+    document.documentElement.className = theme === 'light' ? 'light-theme' : '';
+  }, [theme]);
 
   useEffect(() => {
     localStorage.setItem('qr_history', JSON.stringify(history));
@@ -115,7 +128,12 @@ function App() {
       </div>
 
       <Toaster position="bottom-right" />
-      <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        theme={theme}
+        toggleTheme={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+      />
 
       <main className="container mx-auto max-w-7xl px-4">
         <AnimatePresence mode="wait">
