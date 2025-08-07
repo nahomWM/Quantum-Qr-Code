@@ -17,12 +17,20 @@ import { API_ENDPOINTS } from '../config';
 
 const steps = ['Select Type', 'Upload Content', 'Set Rules', 'Generate'];
 
-const QRCodeGenerator = ({ onGenerateSuccess }) => {
+const QRCodeGenerator = ({ onGenerateSuccess, editData, onCancelEdit }) => {
     const [currentStep, setCurrentStep] = useState(0);
-    const [type, setType] = useState(null); // 'time' or 'location'
-    const [files, setFiles] = useState([]);
+    const [type, setType] = useState(editData?.data?.type || null);
+    const [files, setFiles] = useState(editData?.data?.files || []);
     const [isLoading, setIsLoading] = useState(false);
     const [generatedQr, setGeneratedQr] = useState(null);
+
+    useEffect(() => {
+        if (editData) {
+            setType(editData.data.type);
+            setFiles(editData.data.configurations || []);
+            setCurrentStep(2); // Jump to rules if editing
+        }
+    }, [editData]);
 
     const onDrop = (acceptedFiles) => {
         setFiles(prev => [...prev, ...acceptedFiles.map(file => Object.assign(file, {

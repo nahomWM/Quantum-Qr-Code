@@ -90,6 +90,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [theme, setTheme] = useState(localStorage.getItem('app_theme') || 'dark');
   const [lastGeneratedId, setLastGeneratedId] = useState(null);
+  const [editingData, setEditingData] = useState(null);
   const [history, setHistory] = useState(() => {
     const saved = localStorage.getItem('qr_history');
     return saved ? JSON.parse(saved) : [];
@@ -118,6 +119,11 @@ function App() {
   const selectFromHistory = (id) => {
     setLastGeneratedId(id);
     setActiveTab('analytics');
+  };
+
+  const handleEdit = (item) => {
+    setEditingData(item);
+    setActiveTab('create');
   };
 
   return (
@@ -156,7 +162,11 @@ function App() {
               exit={{ opacity: 0, x: 20 }}
             >
               <Hero />
-              <QRCodeGenerator onGenerateSuccess={handleGenerateSuccess} />
+              <QRCodeGenerator
+                onGenerateSuccess={handleGenerateSuccess}
+                editData={editingData}
+                onCancelEdit={() => setEditingData(null)}
+              />
             </motion.div>
           )}
 
@@ -182,6 +192,7 @@ function App() {
                 history={history}
                 onSelect={selectFromHistory}
                 onDelete={deleteFromHistory}
+                onEdit={handleEdit}
               />
             </motion.div>
           )}
