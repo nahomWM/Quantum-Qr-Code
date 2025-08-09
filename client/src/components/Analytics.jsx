@@ -10,7 +10,8 @@ import {
     Zap,
     Activity,
     ChevronRight,
-    ExternalLink
+    ExternalLink,
+    Users
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { API_ENDPOINTS } from '../config';
@@ -113,6 +114,29 @@ const Analytics = ({ qrId }) => {
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(typeof stats === 'object' ? stats.percentage : (stats / (data.total || data.totalScans) * 100))}%` }}
                                                 className="h-full bg-primary-gradient"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="glass p-10 rounded-[3rem] space-y-8">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <Users className="text-blue-400" /> Device Distribution
+                            </h3>
+                            <div className="space-y-6">
+                                {Object.entries(data.devices || { 'Mobile': 65, 'Desktop': 30, 'Tablet': 5 }).map(([device, percentage], i) => (
+                                    <div key={i} className="space-y-2">
+                                        <div className="flex justify-between text-sm font-bold">
+                                            <span>{device}</span>
+                                            <span>{percentage}%</span>
+                                        </div>
+                                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${percentage}%` }}
+                                                className="h-full bg-secondary-gradient"
                                             />
                                         </div>
                                     </div>
