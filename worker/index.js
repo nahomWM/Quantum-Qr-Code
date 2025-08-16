@@ -153,6 +153,7 @@ async function recordAnalytics(qrId, details, timestamp, env) {
             total: 0,
             byCountry: {},
             byCity: {},
+            devices: { 'Mobile': 0, 'Desktop': 0, 'Tablet': 0, 'Other': 0 },
             scans: []
         };
 
@@ -161,6 +162,17 @@ async function recordAnalytics(qrId, details, timestamp, env) {
 
         const country = details.country;
         const city = details.city;
+
+        // Simple Device Detection
+        const ua = details.userAgent.toLowerCase();
+        let device = 'Desktop';
+        if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+            device = 'Tablet';
+        } else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+            device = 'Mobile';
+        }
+        data.devices = data.devices || { 'Mobile': 0, 'Desktop': 0, 'Tablet': 0, 'Other': 0 };
+        data.devices[device] = (data.devices[device] || 0) + 1;
 
         data.byCountry[country] = (data.byCountry[country] || 0) + 1;
         data.byCity[city] = (data.byCity[city] || 0) + 1;
@@ -175,10 +187,48 @@ async function recordAnalytics(qrId, details, timestamp, env) {
         // Trim history to prevent KV size issues
         if (data.scans.length > 200) data.scans.shift();
 
+        // Generate Live Insights
+        data.insights = generateInsights(data);
+
         await env.QR_METADATA.put(key, JSON.stringify(data));
     } catch (err) {
         console.error('Analytics record failed:', err);
     }
+}
+
+function generateInsights(data) {
+    const insights = [];
+
+    // 1. Peak Time Analysis
+    const hours = data.scans.map(s => new Date(s.t).getHours());
+    if (hours.length > 10) {
+        const counts = {};
+        hours.forEach(h => counts[h] = (counts[h] || 0) + 1);
+        const peakHour = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+        insights.push({
+            type: 'peak_time',
+            title: 'Peak Activity',
+            message: `Most scans occur around ${peakHour}:00. Considerations for time-based content changes?`,
+            color: 'text-emerald-400'
+        });
+    }
+
+    // 2. Location Dominance
+    const sortedCountries = Object.entries(data.byCountry).sort((a, b) => b[1] - a[1]);
+    if (sortedCountries.length > 0) {
+        const topCountry = sortedCountries[0];
+        const percent = Math.round((topCountry[1] / data.total) * 100);
+        if (percent > 40) {
+            insights.push({
+                type: 'geo_dominance',
+                title: 'Targeting Opportunity',
+                message: `${percent}% of traffic is from ${topCountry[0]}. Localized content could boost conversion.`,
+                color: 'text-orange-400'
+            });
+        }
+    }
+
+    return insights;
 }
 
 /**
