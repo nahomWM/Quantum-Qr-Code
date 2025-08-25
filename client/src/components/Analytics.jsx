@@ -179,14 +179,18 @@ const Analytics = ({ qrId }) => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="p-6 bg-white/5 rounded-3xl space-y-3">
-                                <p className="text-emerald-400 font-bold text-sm tracking-widest uppercase">Peak Activity</p>
-                                <p className="text-lg leading-relaxed">Most scans occur between <span className="text-white font-black italic">14:00 - 16:00</span>. Consider scaling resource capacity during these hours.</p>
-                            </div>
-                            <div className="p-6 bg-white/5 rounded-3xl space-y-3">
-                                <p className="text-orange-400 font-bold text-sm tracking-widest uppercase">Targeting Optimization</p>
-                                <p className="text-lg leading-relaxed">High interest detected from <span className="text-white font-black italic">Japan</span>. Localizing content could increase engagement by <span className="text-white font-black italic">24%</span>.</p>
-                            </div>
+                            {data.insights && data.insights.length > 0 ? (
+                                data.insights.map((insight, idx) => (
+                                    <div key={idx} className="p-6 bg-white/5 rounded-3xl space-y-3">
+                                        <p className={`${insight.color} font-bold text-sm tracking-widest uppercase`}>{insight.title}</p>
+                                        <p className="text-lg leading-relaxed">{insight.message}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-2 p-6 bg-white/5 rounded-3xl text-center">
+                                    <p className="text-text-secondary italic">Collecting traffic data to generate quantum insights...</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </>
