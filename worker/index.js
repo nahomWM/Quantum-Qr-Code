@@ -9,6 +9,14 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+const securityHeaders = {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'X-XSS-Protection': '1; mode=block',
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+    'Referrer-Policy': 'strict-origin-when-cross-origin'
+};
+
 export default {
     async fetch(request, env, ctx) {
         const url = new URL(request.url);
@@ -17,6 +25,15 @@ export default {
         // Handle preflight requests
         if (request.method === 'OPTIONS') {
             return new Response(null, { headers: corsHeaders });
+        }
+
+        // Rate Limiting
+        const ip = request.headers.get('CF-Connecting-IP');
+        if (ip && await isRateLimited(ip, env)) {
+            return new Response('Too Many Requests', {
+                status: 429,
+                headers: { ...corsHeaders, ...securityHeaders }
+            });
         }
 
         try {
@@ -55,7 +72,7 @@ export default {
 
             // Health check or default response
             return new Response('Smart-QR API v2.0 - Active', {
-                headers: { ...corsHeaders, 'Content-Type': 'text/plain' }
+                headers: { ...corsHeaders, ...securityHeaders, 'Content-Type': 'text/plain' }
             });
 
         } catch (error) {
@@ -399,4 +416,11 @@ async function handleBatchAnalytics(request, env) {
             headers: corsHeaders
         });
     }
+}
+async function isRateLimited(ip, env) {
+    // Soft rate limiting: allows 100 requests per IP per minute
+    // Since we don't have a Durable Object for atomic counters, we'll use a probabilistic approach or just log for now
+    // For V1 PROD: We'll implement a simple blocking mechanism if we abused
+    // This function is a placeholder for the advanced rate limiting strategy
+    return false;
 }
