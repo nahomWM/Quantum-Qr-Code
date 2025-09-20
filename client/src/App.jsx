@@ -227,7 +227,13 @@ function App() {
       </main>
 
       <footer className="py-20 text-center text-text-secondary text-sm">
-        <p>© 2025 SmartQR Labs. All rights reserved.</p>
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs font-bold text-emerald-400">All Systems Operational</span>
+          </div>
+          <p>© {new Date().getFullYear()} SmartQR Labs. All rights reserved. v1.0.0-Titan</p>
+        </div>
       </footer>
     </div>
   );
